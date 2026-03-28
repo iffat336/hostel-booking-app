@@ -451,13 +451,26 @@ app.put('/api/settings', (req, res) => {
 // Catch-all route for SPA - serve index.html for React Router
 app.get('*', (req, res) => {
   const indexPath = path.join(distDir, 'index.html');
-  if (fs.existsSync(indexPath)) {
-    res.sendFile(indexPath);
-  } else {
-    res.status(404).json({ error: 'Application not found. Please ensure the dist folder is built.' });
+  try {
+    if (fs.existsSync(indexPath)) {
+      const content = fs.readFileSync(indexPath, 'utf-8');
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.send(content);
+    } else {
+      console.error(`dist/index.html not found at ${indexPath}`);
+      res.status(404).send(`<!DOCTYPE html><html><body><h1>Error</h1><p>Application not found. dist folder: ${distDir}</p></body></html>`);
+    }
+  } catch (err) {
+    console.error('Error serving index.html:', err);
+    res.status(500).json({ error: 'Server error: ' + err.message });
   }
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`=================================`);
+  console.log(`Server running on port ${PORT}`);
+  console.log(`NODE_ENV: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`dist folder exists: ${fs.existsSync(distDir)}`);
+  console.log(`data folder path: ${DATA_DIR}`);
+  console.log(`=================================`);
 });

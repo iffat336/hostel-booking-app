@@ -8,7 +8,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
@@ -24,6 +24,10 @@ app.use('/hostel-pictures', express.static(path.join(publicDir, 'hostel-pictures
 }));
 app.use('/vc-zulfiqar-ali.jpg', express.static(path.join(publicDir, 'vc-zulfiqar-ali.jpg')));
 app.use('/humera-razaq.jpg', express.static(path.join(publicDir, 'humera-razaq.jpg')));
+
+// Serve the React app from dist folder
+const distDir = path.join(__dirname, '..', 'dist');
+app.use(express.static(distDir, { maxAge: '1d' }));
 
 const DATA_DIR = path.join(__dirname, 'data');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
@@ -437,6 +441,11 @@ app.put('/api/settings', (req, res) => {
     console.error('Update settings error:', err);
     res.status(500).json({ error: 'Server error' });
   }
+});
+
+// Catch-all route for SPA - serve index.html for React Router
+app.get('*', (req, res) => {
+  res.sendFile(path.join(distDir, 'index.html'));
 });
 
 app.listen(PORT, () => {

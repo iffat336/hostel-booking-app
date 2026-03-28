@@ -27,7 +27,12 @@ app.use('/humera-razaq.jpg', express.static(path.join(publicDir, 'humera-razaq.j
 
 // Serve the React app from dist folder
 const distDir = path.join(__dirname, '..', 'dist');
-app.use(express.static(distDir, { maxAge: '1d' }));
+if (fs.existsSync(distDir)) {
+  app.use(express.static(distDir, { maxAge: '1d' }));
+  console.log(`Serving static files from ${distDir}`);
+} else {
+  console.warn(`Warning: dist folder not found at ${distDir}`);
+}
 
 const DATA_DIR = path.join(__dirname, 'data');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
@@ -445,7 +450,12 @@ app.put('/api/settings', (req, res) => {
 
 // Catch-all route for SPA - serve index.html for React Router
 app.get('*', (req, res) => {
-  res.sendFile(path.join(distDir, 'index.html'));
+  const indexPath = path.join(distDir, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(404).json({ error: 'Application not found. Please ensure the dist folder is built.' });
+  }
 });
 
 app.listen(PORT, () => {

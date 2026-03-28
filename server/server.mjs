@@ -449,7 +449,7 @@ app.put('/api/settings', (req, res) => {
 });
 
 // Catch-all route for SPA - serve index.html for React Router
-app.get('/*', (req, res) => {
+app.use((req, res) => {
   const indexPath = path.join(distDir, 'index.html');
   try {
     if (fs.existsSync(indexPath)) {
